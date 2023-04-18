@@ -11,6 +11,12 @@ const commentsLoader = document.querySelector('.comments-loader');
 const descriptionObj = document.querySelector('.social__caption');
 const closeButton = document.querySelector('.big-picture__cancel');
 const commentCount = document.querySelector('.social__comment-count');
+const socialComments = document.querySelector('.social__comments');
+
+const COMMENTS_PART = 2;
+let commentsShown = 0;
+let commentsList = [];
+
 
 closeButton.addEventListener(
   'click',
@@ -20,6 +26,31 @@ closeButton.addEventListener(
   }
 );
 
+const renderComments = () => {
+  commentsShown += COMMENTS_PART;
+
+  if(commentsShown >= commentsList.length) {
+    commentsLoader.classList.add('hidden');
+    commentsShown = commentsList.length;
+  } else {
+    commentsLoader.classList.remove('hidden');
+  }
+
+  const fragment = document.createDocumentFragment();
+  for(let i = 0; i < commentsShown; i++) {
+    const elFragment = createComment(commentsList[i]);
+    fragment.append(elFragment);
+  }
+  const postfix = commentsList.length === 1 ? 'я' : 'ев';
+  commentCount.textContent = `${commentsShown} из ${commentsList.length} комментари${postfix}`;
+
+  socialComments.innerHTML = '';
+  socialComments.append(fragment);
+
+};
+
+commentsLoader.addEventListener('click', renderComments);
+
 
 const getBigPicture = ({ url, description, likes, comments }) => {
   bigImg.src = url;
@@ -28,8 +59,6 @@ const getBigPicture = ({ url, description, likes, comments }) => {
   descriptionObj.textContent = description;
   bigPicture.classList.remove('hidden');
   bodyElement.classList.add('modal-open');
-  commentsLoader.classList.add('hidden');
-  commentCount.classList.add('hidden');
 
   const fragment = document.createDocumentFragment();
 
@@ -38,10 +67,13 @@ const getBigPicture = ({ url, description, likes, comments }) => {
     fragment.append(el);
   });
 
-  const socialComments = bigPicture.querySelector('.social__comments');
   socialComments.textContent = '';
-
   socialComments.appendChild(fragment);
+
+  commentsShown = 0;
+  commentsList = comments;
+
+  renderComments();
 };
 
 export { getBigPicture };
